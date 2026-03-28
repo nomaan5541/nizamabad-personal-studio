@@ -1,18 +1,22 @@
 import { useState } from "react";
 import axios from "axios";
 import { useNavigate } from "react-router-dom";
+import toast from "react-hot-toast";
+import { Lock, Mail } from "lucide-react";
 
 export default function Login({ setToken }) {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-  const [error, setError] = useState("");
 
   const navigate = useNavigate();
 
   const handleLogin = async () => {
-    try {
-      setError("");
+    if (!email || !password) {
+      toast.error("Enter email and password");
+      return;
+    }
 
+    try {
       const res = await axios.post("http://localhost:5000/api/auth/login", {
         email,
         password,
@@ -21,39 +25,53 @@ export default function Login({ setToken }) {
       localStorage.setItem("token", res.data.token);
       setToken(res.data.token);
 
-      // ✅ redirect to dashboard
-      navigate("/admin-dashboard");
-    } catch (err) {
-      setError("Invalid email or password");
+      toast.success("Login successful");
+
+      setTimeout(() => {
+        navigate("/admin-dashboard");
+      }, 800);
+    } catch {
+      toast.error("Invalid email or password");
     }
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-black text-white">
-      <div className="p-6 bg-gray-900 rounded-xl w-80 border border-gray-800">
-        <h2 className="text-xl mb-4 text-center">Admin Login</h2>
+    <div className="min-h-screen flex items-center justify-center px-4 relative overflow-hidden">
+      {/* 🔥 Background Glow */}
+      <div className="absolute w-[400px] h-[400px] bg-[#C9A34E]/20 blur-[120px] top-[-100px] left-[-100px]" />
+      <div className="absolute w-[300px] h-[300px] bg-white/10 blur-[100px] bottom-[-80px] right-[-80px]" />
 
-        {/* ❌ ERROR MESSAGE */}
-        {error && (
-          <p className="mb-3 text-red-500 text-sm text-center">{error}</p>
-        )}
+      {/* Card */}
+      <div className="relative w-full max-w-sm p-6 md:p-8 rounded-2xl bg-[#111]/80 backdrop-blur border border-gray-800 shadow-xl">
+        {/* Heading */}
+        <h2 className="text-2xl font-semibold text-center mb-6">Admin Login</h2>
 
-        <input
-          className="w-full p-2 mb-3 bg-black border border-gray-700"
-          placeholder="Email"
-          onChange={(e) => setEmail(e.target.value)}
-        />
+        {/* Email */}
+        <div className="relative mb-4">
+          <Mail className="absolute left-3 top-3 text-gray-500" size={18} />
+          <input
+            type="email"
+            placeholder="Email"
+            className="w-full pl-10 pr-3 py-2 bg-black border border-gray-700 rounded-lg focus:outline-none focus:border-[#C9A34E]"
+            onChange={(e) => setEmail(e.target.value)}
+          />
+        </div>
 
-        <input
-          type="password"
-          className="w-full p-2 mb-3 bg-black border border-gray-700"
-          placeholder="Password"
-          onChange={(e) => setPassword(e.target.value)}
-        />
+        {/* Password */}
+        <div className="relative mb-5">
+          <Lock className="absolute left-3 top-3 text-gray-500" size={18} />
+          <input
+            type="password"
+            placeholder="Password"
+            className="w-full pl-10 pr-3 py-2 bg-black border border-gray-700 rounded-lg focus:outline-none focus:border-[#C9A34E]"
+            onChange={(e) => setPassword(e.target.value)}
+          />
+        </div>
 
+        {/* Button */}
         <button
           onClick={handleLogin}
-          className="w-full bg-white text-black py-2 rounded hover:bg-gray-200 transition"
+          className="w-full py-2 rounded-lg bg-[#C9A34E] text-black font-semibold hover:opacity-90 transition cursor-pointer"
         >
           Login
         </button>

@@ -1,17 +1,28 @@
 import { useEffect, useState } from "react";
 import axios from "axios";
+import toast from "react-hot-toast";
+import {
+  Users,
+  Upload,
+  LogOut,
+  Search,
+  CheckCircle,
+  XCircle,
+} from "lucide-react";
 
 export default function AdminDashboard({ token }) {
   const [members, setMembers] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [msg, setMsg] = useState("");
-
   const [activeTab, setActiveTab] = useState("members");
+  const [search, setSearch] = useState("");
 
-  // upload states
   const [before, setBefore] = useState(null);
   const [after, setAfter] = useState(null);
   const [desc, setDesc] = useState("");
+
+  const [resetKey, setResetKey] = useState(Date.now());
+  const [uploading, setUploading] = useState(false);
+  const [togglingId, setTogglingId] = useState(null); // 🔥 NEW
 
   // ✅ FETCH MEMBERS
   const fetchMembers = async () => {
@@ -20,16 +31,20 @@ export default function AdminDashboard({ token }) {
         headers: { Authorization: `Bearer ${token}` },
       });
       setMembers(res.data);
-    } catch (err) {
-      setMsg("Failed to load members ❌");
+    } catch {
+      toast.error("Failed to load members");
     } finally {
       setLoading(false);
     }
   };
 
-  // ✅ TOGGLE
+  // ✅ TOGGLE WITH LOADING FIX
   const toggle = async (id) => {
+    if (togglingId === id) return; // 🚫 prevent spam
+
     try {
+      setTogglingId(id); // 🔒 lock
+
       const res = await axios.put(
         `http://localhost:5000/api/members/${id}/toggle`,
         {},
@@ -40,21 +55,26 @@ export default function AdminDashboard({ token }) {
 
       setMembers((prev) => prev.map((m) => (m._id === id ? res.data : m)));
 
-      setMsg(res.data.isActive ? "Activated ✅" : "Deactivated ❌");
-      setTimeout(() => setMsg(""), 1500);
+      toast.success(res.data.isActive ? "Activated" : "Deactivated");
     } catch {
-      setMsg("Toggle failed ❌");
+      toast.error("Toggle failed");
+    } finally {
+      setTogglingId(null); // 🔓 unlock
     }
   };
 
-  // ✅ UPLOAD TRANSFORMATION
+  // ✅ UPLOAD
   const uploadTransformation = async () => {
+    if (uploading) return;
+
     if (!before || !after) {
-      setMsg("Select both images ❌");
+      toast.error("Select both images");
       return;
     }
 
     try {
+      setUploading(true);
+
       const formData = new FormData();
       formData.append("before", before);
       formData.append("after", after);
@@ -67,15 +87,17 @@ export default function AdminDashboard({ token }) {
         },
       });
 
-      setMsg("Uploaded successfully ✅");
+      toast.success("Uploaded successfully");
 
       // reset
       setBefore(null);
       setAfter(null);
       setDesc("");
+      setResetKey(Date.now());
     } catch (err) {
-      console.log("UPLOAD ERROR:", err.response?.data || err);
-      setMsg(err.response?.data?.msg || "Upload failed ❌");
+      toast.error(err.response?.data?.msg || "Upload failed");
+    } finally {
+      setUploading(false);
     }
   };
 
@@ -84,110 +106,181 @@ export default function AdminDashboard({ token }) {
   }, [token]);
 
   return (
-    <div className="min-h-screen bg-black text-white flex">
-      {/* 🔹 SIDEBAR */}
-      <div className="w-48 bg-gray-900 p-4 space-y-4">
-        <h2 className="text-xl mb-6">Admin</h2>
+    <div className="min-h-screen flex flex-col md:flex-row">
+      {/* SIDEBAR */}
+      <div className="md:w-56 bg-[#111] border-r border-gray-800 p-4 flex md:flex-col justify-between">
+        <div>
+          <h2 className="text-xl font-semibold mb-6">Admin</h2>
 
-        <button
-          onClick={() => setActiveTab("members")}
-          className="block w-full text-left hover:text-gray-400"
-        >
-          Members
-        </button>
+          <div className="flex md:flex-col gap-2">
+            <button
+              onClick={() => setActiveTab("members")}
+              className={`flex items-center gap-2 px-3 py-2 rounded-lg cursor-pointer ${
+                activeTab === "members"
+                  ? "bg-[#C9A34E] text-black"
+                  : "hover:bg-gray-800"
+              }`}
+            >
+              <Users size={18} /> Members
+            </button>
 
-        <button
-          onClick={() => setActiveTab("upload")}
-          className="block w-full text-left hover:text-gray-400"
-        >
-          Upload Transformations
-        </button>
+            <button
+              onClick={() => setActiveTab("upload")}
+              className={`flex items-center gap-2 px-3 py-2 rounded-lg cursor-pointer ${
+                activeTab === "upload"
+                  ? "bg-[#C9A34E] text-black"
+                  : "hover:bg-gray-800"
+              }`}
+            >
+              <Upload size={18} /> Upload
+            </button>
+          </div>
+        </div>
 
         <button
           onClick={() => {
             localStorage.removeItem("token");
             window.location.href = "/admin";
           }}
-          className="mt-10 text-red-400"
+          className="flex items-center gap-2 text-red-400 mt-6 cursor-pointer"
         >
-          Logout
+          <LogOut size={18} /> Logout
         </button>
       </div>
 
-      {/* 🔹 MAIN CONTENT */}
-      <div className="flex-1 p-6">
-        {msg && <p className="text-center text-sm text-red-400 mb-4">{msg}</p>}
-
-        {/* ================= MEMBERS ================= */}
+      {/* MAIN */}
+      <div className="flex-1 p-4 md:p-8">
+        {/* MEMBERS */}
         {activeTab === "members" && (
           <>
-            <h1 className="text-2xl mb-6">Members</h1>
+            <h1 className="text-3xl font-semibold mb-6">Members</h1>
+
+            {/* SEARCH */}
+            <div className="relative mb-6 max-w-md">
+              <Search
+                className="absolute left-3 top-3 text-gray-500"
+                size={18}
+              />
+              <input
+                placeholder="Search member..."
+                className="w-full pl-10 pr-3 py-2 bg-black border border-gray-700 rounded-lg"
+                onChange={(e) => setSearch(e.target.value)}
+              />
+            </div>
 
             {loading ? (
               <p>Loading...</p>
             ) : (
-              <div className="grid gap-4 md:grid-cols-2">
-                {members.map((m) => (
-                  <div
-                    key={m._id}
-                    className="bg-gray-900 p-5 rounded-xl flex justify-between"
-                  >
-                    <div>
-                      <p>{m.name}</p>
-                      <p className="text-sm text-gray-400">{m.email}</p>
-                      <p className="text-xs text-gray-500">
-                        Expires:{" "}
-                        {m.expiryDate
-                          ? new Date(m.expiryDate).toDateString()
-                          : "N/A"}
-                      </p>
-                    </div>
-
-                    <button
-                      onClick={() => toggle(m._id)}
-                      className={`px-4 py-2 rounded ${
-                        m.isActive ? "bg-green-500" : "bg-red-500"
-                      }`}
+              <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+                {members
+                  .filter((m) =>
+                    m.name?.toLowerCase().includes(search.toLowerCase()),
+                  )
+                  .map((m) => (
+                    <div
+                      key={m._id}
+                      className="bg-[#111] border border-gray-800 p-4 rounded-xl flex flex-col gap-3"
                     >
-                      {m.isActive ? "Active" : "Inactive"}
-                    </button>
-                  </div>
-                ))}
+                      <div>
+                        <p className="font-semibold">{m.name}</p>
+                        <p className="text-sm text-gray-400">{m.email}</p>
+
+                        <p className="text-xs text-gray-500 mt-1">
+                          Expires:{" "}
+                          {m.expiryDate
+                            ? new Date(m.expiryDate).toDateString()
+                            : "N/A"}
+                        </p>
+                      </div>
+
+                      <button
+                        onClick={() => toggle(m._id)}
+                        disabled={togglingId === m._id}
+                        className={`flex items-center justify-center gap-2 py-2 rounded-lg text-sm transition ${
+                          togglingId === m._id
+                            ? "bg-gray-700 text-gray-400 cursor-not-allowed"
+                            : m.isActive
+                              ? "bg-green-500 cursor-pointer"
+                              : "bg-red-500 cursor-pointer"
+                        }`}
+                      >
+                        {togglingId === m._id ? (
+                          "Updating..."
+                        ) : m.isActive ? (
+                          <>
+                            <CheckCircle size={16} /> Active
+                          </>
+                        ) : (
+                          <>
+                            <XCircle size={16} /> Inactive
+                          </>
+                        )}
+                      </button>
+                    </div>
+                  ))}
               </div>
             )}
           </>
         )}
 
-        {/* ================= UPLOAD ================= */}
+        {/* UPLOAD */}
         {activeTab === "upload" && (
-          <div className="max-w-md">
-            <h1 className="text-2xl mb-6">Upload Transformation</h1>
+          <div className="flex justify-center items-center min-h-[70vh]">
+            <div className="w-full max-w-md bg-[#111] border border-gray-800 rounded-2xl p-6 shadow-lg">
+              <h1 className="text-2xl font-semibold mb-6 text-center">
+                Upload Transformation
+              </h1>
 
-            <input
-              type="file"
-              onChange={(e) => setBefore(e.target.files[0])}
-              className="mb-3"
-            />
+              <div className="space-y-4">
+                <div>
+                  <label className="text-sm text-gray-400">Before Image</label>
+                  <input
+                    key={resetKey + "-before"}
+                    type="file"
+                    onChange={(e) => setBefore(e.target.files[0])}
+                    className="w-full mt-1 text-sm bg-black border border-gray-700 rounded-lg p-2 cursor-pointer"
+                  />
+                  {before && (
+                    <p className="text-xs text-gray-500 mt-1">{before.name}</p>
+                  )}
+                </div>
 
-            <input
-              type="file"
-              onChange={(e) => setAfter(e.target.files[0])}
-              className="mb-3"
-            />
+                <div>
+                  <label className="text-sm text-gray-400">After Image</label>
+                  <input
+                    key={resetKey + "-after"}
+                    type="file"
+                    onChange={(e) => setAfter(e.target.files[0])}
+                    className="w-full mt-1 text-sm bg-black border border-gray-700 rounded-lg p-2 cursor-pointer"
+                  />
+                  {after && (
+                    <p className="text-xs text-gray-500 mt-1">{after.name}</p>
+                  )}
+                </div>
 
-            <input
-              placeholder="Description"
-              value={desc}
-              onChange={(e) => setDesc(e.target.value)}
-              className="w-full p-2 mb-3 bg-black border"
-            />
+                <div>
+                  <label className="text-sm text-gray-400">Description</label>
+                  <input
+                    placeholder="E.g. 12 week fat loss transformation"
+                    value={desc}
+                    onChange={(e) => setDesc(e.target.value)}
+                    className="w-full mt-1 p-2 bg-black border border-gray-700 rounded-lg focus:outline-none focus:border-[#C9A34E]"
+                  />
+                </div>
 
-            <button
-              onClick={uploadTransformation}
-              className="w-full bg-white text-black py-2"
-            >
-              Upload
-            </button>
+                <button
+                  onClick={uploadTransformation}
+                  disabled={uploading}
+                  className={`w-full py-2 rounded-lg font-semibold transition ${
+                    uploading
+                      ? "bg-gray-700 text-gray-400 cursor-not-allowed"
+                      : "bg-[#C9A34E] text-black hover:opacity-90 cursor-pointer"
+                  }`}
+                >
+                  {uploading ? "Uploading..." : "Upload"}
+                </button>
+              </div>
+            </div>
           </div>
         )}
       </div>

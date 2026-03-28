@@ -1,11 +1,11 @@
 import { useState } from "react";
 import axios from "axios";
 import { useNavigate } from "react-router-dom";
+import toast from "react-hot-toast";
 
 export default function UserLogin() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-  const [msg, setMsg] = useState("");
 
   const navigate = useNavigate();
 
@@ -16,45 +16,59 @@ export default function UserLogin() {
         { email, password },
       );
 
+      // ✅ Store token
       localStorage.setItem("userToken", res.data.token);
 
-      setMsg("Login successful ✅");
+      // 🔥 Toast
+      toast.success("Login successful 🎉");
 
-      // ✅ REDIRECT TO HOME
+      // ✅ Redirect to home
       setTimeout(() => {
         navigate("/");
       }, 1000);
     } catch (err) {
-      setMsg("Login failed ❌");
+      toast.error(err.response?.data?.msg || "Login failed ❌");
     }
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-black text-white">
-      <div className="bg-gray-900 p-6 rounded w-80">
-        <h2 className="mb-4">Member Login</h2>
+    <div className="min-h-screen flex items-center justify-center px-4">
+      {/* Card */}
+      <div className="card w-full max-w-md">
+        <h2 className="text-2xl font-semibold mb-6 text-center">
+          Member Login
+        </h2>
 
-        {msg && <p className="mb-3 text-center text-sm text-red-400">{msg}</p>}
+        {/* Inputs */}
+        <div className="space-y-4">
+          <input
+            className="input-field"
+            placeholder="Email"
+            onChange={(e) => setEmail(e.target.value)}
+          />
 
-        <input
-          className="w-full p-2 mb-3 bg-black border"
-          placeholder="Email"
-          onChange={(e) => setEmail(e.target.value)}
-        />
+          <input
+            type="password"
+            className="input-field"
+            placeholder="Password"
+            onChange={(e) => setPassword(e.target.value)}
+          />
+        </div>
 
-        <input
-          type="password"
-          className="w-full p-2 mb-3 bg-black border"
-          placeholder="Password"
-          onChange={(e) => setPassword(e.target.value)}
-        />
-
-        <button onClick={login} className="w-full bg-white text-black py-2">
+        {/* Button */}
+        <button onClick={login} className="btn-primary w-full mt-6">
           Login
         </button>
-        <p>
+
+        {/* Extra */}
+        <p className="text-sm text-center mt-4 text-gray-400">
           Don't have an account?{" "}
-          <span onClick={() => navigate("/register")}>Signup</span>
+          <span
+            onClick={() => navigate("/register")}
+            className="text-[#C9A34E] cursor-pointer hover:underline"
+          >
+            Signup
+          </span>
         </p>
       </div>
     </div>
