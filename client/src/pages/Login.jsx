@@ -17,7 +17,7 @@ export default function Login({ setToken }) {
     }
 
     try {
-      const res = await axios.post("${API}/api/auth/login", {
+      const res = await axios.post(`${API}/api/auth/login`, {
         email,
         password,
       });

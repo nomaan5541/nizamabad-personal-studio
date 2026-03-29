@@ -25,7 +25,7 @@ export default function Dashboard({ token }) {
 
   const fetchMembers = async () => {
     try {
-      const res = await axios.get("${API}/api/members", {
+      const res = await axios.get(`${API}/api/members`, {
         headers: { Authorization: `Bearer ${token}` },
       });
       setMembers(res.data);
@@ -41,7 +41,7 @@ export default function Dashboard({ token }) {
     }
 
     try {
-      await axios.post("${API}/api/members", form, {
+      await axios.post(`${API}/api/members`, form, {
         headers: { Authorization: `Bearer ${token}` },
       });
 

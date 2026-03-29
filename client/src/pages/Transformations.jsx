@@ -8,7 +8,7 @@ export default function Transformations() {
   const [index, setIndex] = useState(0);
 
   useEffect(() => {
-    axios.get("${API}/api/transformations").then((res) => setData(res.data));
+    axios.get(`${API}/api/transformations`).then((res) => setData(res.data));
   }, []);
 
   useEffect(() => {

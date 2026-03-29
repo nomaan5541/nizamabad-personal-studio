@@ -16,7 +16,7 @@ export default function UserRegister() {
 
   const register = async () => {
     try {
-      const res = await axios.post("${API}/api/customers/register", form);
+      const res = await axios.post(`${API}/api/customers/register`, form);
 
       // 🔥 Success Toast
       toast.success("Registration successful 🎉");
