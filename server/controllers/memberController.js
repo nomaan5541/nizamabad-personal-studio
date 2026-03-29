@@ -1,82 +1,94 @@
 import Member from "../models/Member.js";
 import { sendEmail } from "../utils/sendEmail.js";
 
-// ✅ ADD MEMBER
+// ADD MEMBER
 export const addMember = async (req, res) => {
   try {
-    const { email } = req.body;
-
-    if (!email) {
-      return res.status(400).json({ msg: "Email required" });
-    }
-
-    const existing = await Member.findOne({ email });
-
-    if (existing) {
-      return res.status(400).json({ msg: "User already exists" });
-    }
-
     const member = await Member.create(req.body);
-
     res.status(201).json(member);
   } catch (err) {
-    console.log("ADD MEMBER ERROR:", err);
     res.status(500).json({ msg: "Error adding member" });
   }
 };
 
-// ✅ GET MEMBERS (IMPORTANT FIX)
+// GET MEMBERS
 export const getMembers = async (req, res) => {
   try {
     const members = await Member.find().sort({ createdAt: -1 });
     res.json(members);
-  } catch (err) {
-    console.log("GET MEMBERS ERROR:", err);
+  } catch {
     res.status(500).json({ msg: "Error fetching members" });
   }
 };
 
-// ✅ TOGGLE (SAFE VERSION)
+// 🔥 FINAL TOGGLE (30 DAYS)
 export const toggleSubscription = async (req, res) => {
   try {
     const { id } = req.params;
-
-    if (!id || id.length !== 24) {
-      return res.status(400).json({ msg: "Invalid ID" });
-    }
-
     const member = await Member.findById(id);
 
     if (!member) {
       return res.status(404).json({ msg: "Member not found" });
     }
 
-    // ✅ FIX: direct update (NO validation issue)
-    const updated = await Member.findByIdAndUpdate(
-      id,
-      { isActive: !member.isActive },
-      { new: true },
-    );
+    // ✅ ACTIVATE (30 DAYS)
+    if (!member.subscriptionActive) {
+      const start = new Date();
+      const end = new Date(start);
+      end.setDate(start.getDate() + 30); // 🔥 30 DAYS
 
-    // ✅ SAFE EMAIL
-    if (!updated.isActive && updated.email) {
-      try {
-        await sendEmail(
-          updated.email,
-          "Membership Expired",
-          "Your membership is inactive. Please renew.",
-        );
-      } catch (err) {
-        console.log("EMAIL ERROR (ignored):", err.message);
-      }
+      member.subscriptionActive = true;
+      member.subscriptionStart = start;
+      member.subscriptionEnd = end;
+
+      await member.save();
+
+      await sendEmail(
+        member.email,
+        "Membership Activated - Nizamabad PT Studio",
+        `
+Hello ${member.name},
+
+Your membership has been successfully activated.
+
+📅 Start Date: ${start.toDateString()}
+📅 Expiry Date: ${end.toDateString()}
+
+You now have full access to all training services.
+
+Stay consistent. Stay strong 💪
+
+Regards,
+Nizamabad Personal Training Studio
+        `,
+      );
     }
 
-    res.json(updated);
+    // ❌ DEACTIVATE
+    else {
+      member.subscriptionActive = false;
+      await member.save();
+
+      await sendEmail(
+        member.email,
+        "Membership Deactivated - Nizamabad PT Studio",
+        `
+Hello ${member.name},
+
+Your membership has been deactivated.
+
+If this was not intended or you want to continue,
+please contact the admin.
+
+Regards,
+Nizamabad Personal Training Studio
+        `,
+      );
+    }
+
+    res.json(member);
   } catch (err) {
-    console.log("TOGGLE ERROR FULL:", err);
-    res.status(500).json({
-      msg: "Toggle failed",
-      error: err.message,
-    });
+    console.log(err);
+    res.status(500).json({ msg: "Toggle failed" });
   }
 };

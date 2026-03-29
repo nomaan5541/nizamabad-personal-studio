@@ -22,7 +22,15 @@ export default function AdminDashboard({ token }) {
 
   const [resetKey, setResetKey] = useState(Date.now());
   const [uploading, setUploading] = useState(false);
-  const [togglingId, setTogglingId] = useState(null); // 🔥 NEW
+  const [togglingId, setTogglingId] = useState(null);
+
+  // 🔥 DAYS LEFT
+  const getDaysLeft = (end) => {
+    if (!end) return "N/A";
+    const diff = new Date(end) - new Date();
+    const days = Math.ceil(diff / (1000 * 60 * 60 * 24));
+    return days > 0 ? days : 0;
+  };
 
   // ✅ FETCH MEMBERS
   const fetchMembers = async () => {
@@ -38,12 +46,12 @@ export default function AdminDashboard({ token }) {
     }
   };
 
-  // ✅ TOGGLE WITH LOADING FIX
+  // 🔥 TOGGLE
   const toggle = async (id) => {
-    if (togglingId === id) return; // 🚫 prevent spam
+    if (togglingId === id) return;
 
     try {
-      setTogglingId(id); // 🔒 lock
+      setTogglingId(id);
 
       const res = await axios.put(
         `http://localhost:5000/api/members/${id}/toggle`,
@@ -55,15 +63,17 @@ export default function AdminDashboard({ token }) {
 
       setMembers((prev) => prev.map((m) => (m._id === id ? res.data : m)));
 
-      toast.success(res.data.isActive ? "Activated" : "Deactivated");
+      toast.success(
+        res.data.subscriptionActive ? "Activated ✅" : "Deactivated ❌",
+      );
     } catch {
       toast.error("Toggle failed");
     } finally {
-      setTogglingId(null); // 🔓 unlock
+      setTogglingId(null);
     }
   };
 
-  // ✅ UPLOAD
+  // 🔥 UPLOAD
   const uploadTransformation = async () => {
     if (uploading) return;
 
@@ -89,7 +99,7 @@ export default function AdminDashboard({ token }) {
 
       toast.success("Uploaded successfully");
 
-      // reset
+      // RESET
       setBefore(null);
       setAfter(null);
       setDesc("");
@@ -115,7 +125,7 @@ export default function AdminDashboard({ token }) {
           <div className="flex md:flex-col gap-2">
             <button
               onClick={() => setActiveTab("members")}
-              className={`flex items-center gap-2 px-3 py-2 rounded-lg cursor-pointer ${
+              className={`flex items-center gap-2 px-3 py-2 rounded-lg ${
                 activeTab === "members"
                   ? "bg-[#C9A34E] text-black"
                   : "hover:bg-gray-800"
@@ -126,7 +136,7 @@ export default function AdminDashboard({ token }) {
 
             <button
               onClick={() => setActiveTab("upload")}
-              className={`flex items-center gap-2 px-3 py-2 rounded-lg cursor-pointer ${
+              className={`flex items-center gap-2 px-3 py-2 rounded-lg ${
                 activeTab === "upload"
                   ? "bg-[#C9A34E] text-black"
                   : "hover:bg-gray-800"
@@ -142,7 +152,7 @@ export default function AdminDashboard({ token }) {
             localStorage.removeItem("token");
             window.location.href = "/admin";
           }}
-          className="flex items-center gap-2 text-red-400 mt-6 cursor-pointer"
+          className="flex items-center gap-2 text-red-400 mt-6"
         >
           <LogOut size={18} /> Logout
         </button>
@@ -150,7 +160,7 @@ export default function AdminDashboard({ token }) {
 
       {/* MAIN */}
       <div className="flex-1 p-4 md:p-8">
-        {/* MEMBERS */}
+        {/* ================= MEMBERS ================= */}
         {activeTab === "members" && (
           <>
             <h1 className="text-3xl font-semibold mb-6">Members</h1>
@@ -187,26 +197,30 @@ export default function AdminDashboard({ token }) {
 
                         <p className="text-xs text-gray-500 mt-1">
                           Expires:{" "}
-                          {m.expiryDate
-                            ? new Date(m.expiryDate).toDateString()
+                          {m.subscriptionEnd
+                            ? new Date(m.subscriptionEnd).toDateString()
                             : "N/A"}
+                        </p>
+
+                        <p className="text-xs text-gray-400">
+                          Days Left: {getDaysLeft(m.subscriptionEnd)}
                         </p>
                       </div>
 
                       <button
                         onClick={() => toggle(m._id)}
                         disabled={togglingId === m._id}
-                        className={`flex items-center justify-center gap-2 py-2 rounded-lg text-sm transition ${
+                        className={`flex items-center justify-center gap-2 py-2 rounded-lg text-sm ${
                           togglingId === m._id
-                            ? "bg-gray-700 text-gray-400 cursor-not-allowed"
-                            : m.isActive
-                              ? "bg-green-500 cursor-pointer"
-                              : "bg-red-500 cursor-pointer"
+                            ? "bg-gray-700 text-gray-400"
+                            : m.subscriptionActive
+                              ? "bg-green-500"
+                              : "bg-red-500"
                         }`}
                       >
                         {togglingId === m._id ? (
                           "Updating..."
-                        ) : m.isActive ? (
+                        ) : m.subscriptionActive ? (
                           <>
                             <CheckCircle size={16} /> Active
                           </>
@@ -223,7 +237,7 @@ export default function AdminDashboard({ token }) {
           </>
         )}
 
-        {/* UPLOAD */}
+        {/* ================= UPLOAD ================= */}
         {activeTab === "upload" && (
           <div className="flex justify-center items-center min-h-[70vh]">
             <div className="w-full max-w-md bg-[#111] border border-gray-800 rounded-2xl p-6 shadow-lg">
@@ -240,9 +254,6 @@ export default function AdminDashboard({ token }) {
                     onChange={(e) => setBefore(e.target.files[0])}
                     className="w-full mt-1 text-sm bg-black border border-gray-700 rounded-lg p-2 cursor-pointer"
                   />
-                  {before && (
-                    <p className="text-xs text-gray-500 mt-1">{before.name}</p>
-                  )}
                 </div>
 
                 <div>
@@ -253,28 +264,25 @@ export default function AdminDashboard({ token }) {
                     onChange={(e) => setAfter(e.target.files[0])}
                     className="w-full mt-1 text-sm bg-black border border-gray-700 rounded-lg p-2 cursor-pointer"
                   />
-                  {after && (
-                    <p className="text-xs text-gray-500 mt-1">{after.name}</p>
-                  )}
                 </div>
 
                 <div>
                   <label className="text-sm text-gray-400">Description</label>
                   <input
-                    placeholder="E.g. 12 week fat loss transformation"
                     value={desc}
                     onChange={(e) => setDesc(e.target.value)}
-                    className="w-full mt-1 p-2 bg-black border border-gray-700 rounded-lg focus:outline-none focus:border-[#C9A34E]"
+                    placeholder="Transformation details"
+                    className="w-full mt-1 p-2 bg-black border border-gray-700 rounded-lg"
                   />
                 </div>
 
                 <button
                   onClick={uploadTransformation}
                   disabled={uploading}
-                  className={`w-full py-2 rounded-lg font-semibold transition ${
+                  className={`w-full py-2 rounded-lg font-semibold ${
                     uploading
-                      ? "bg-gray-700 text-gray-400 cursor-not-allowed"
-                      : "bg-[#C9A34E] text-black hover:opacity-90 cursor-pointer"
+                      ? "bg-gray-700 text-gray-400"
+                      : "bg-[#C9A34E] text-black"
                   }`}
                 >
                   {uploading ? "Uploading..." : "Upload"}
