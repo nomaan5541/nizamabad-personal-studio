@@ -10,6 +10,7 @@ import {
   CheckCircle,
   XCircle,
 } from "lucide-react";
+const API = import.meta.env.VITE_API_URL;
 
 export default function Dashboard({ token }) {
   const [members, setMembers] = useState([]);
@@ -24,7 +25,7 @@ export default function Dashboard({ token }) {
 
   const fetchMembers = async () => {
     try {
-      const res = await axios.get("http://localhost:5000/api/members", {
+      const res = await axios.get("${API}/api/members", {
         headers: { Authorization: `Bearer ${token}` },
       });
       setMembers(res.data);
@@ -40,7 +41,7 @@ export default function Dashboard({ token }) {
     }
 
     try {
-      await axios.post("http://localhost:5000/api/members", form, {
+      await axios.post("${API}/api/members", form, {
         headers: { Authorization: `Bearer ${token}` },
       });
 
@@ -62,7 +63,7 @@ export default function Dashboard({ token }) {
   const toggle = async (id) => {
     try {
       await axios.put(
-        `http://localhost:5000/api/members/${id}/toggle`,
+        `${API}/api/members/${id}/toggle`,
         {},
         {
           headers: { Authorization: `Bearer ${token}` },

@@ -2,6 +2,7 @@ import { useState } from "react";
 import axios from "axios";
 import { useNavigate } from "react-router-dom";
 import toast from "react-hot-toast";
+const API = import.meta.env.VITE_API_URL;
 
 export default function UserRegister() {
   const [form, setForm] = useState({
@@ -15,10 +16,7 @@ export default function UserRegister() {
 
   const register = async () => {
     try {
-      const res = await axios.post(
-        "http://localhost:5000/api/customers/register",
-        form,
-      );
+      const res = await axios.post("${API}/api/customers/register", form);
 
       // 🔥 Success Toast
       toast.success("Registration successful 🎉");

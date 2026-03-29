@@ -10,6 +10,9 @@ import {
   XCircle,
 } from "lucide-react";
 
+// ✅ GLOBAL API (NO LOCALHOST)
+const API = import.meta.env.VITE_API_URL;
+
 export default function AdminDashboard({ token }) {
   const [members, setMembers] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -35,7 +38,7 @@ export default function AdminDashboard({ token }) {
   // ✅ FETCH MEMBERS
   const fetchMembers = async () => {
     try {
-      const res = await axios.get("http://localhost:5000/api/members", {
+      const res = await axios.get(`${API}/api/members`, {
         headers: { Authorization: `Bearer ${token}` },
       });
       setMembers(res.data);
@@ -54,7 +57,7 @@ export default function AdminDashboard({ token }) {
       setTogglingId(id);
 
       const res = await axios.put(
-        `http://localhost:5000/api/members/${id}/toggle`,
+        `${API}/api/members/${id}/toggle`,
         {},
         {
           headers: { Authorization: `Bearer ${token}` },
@@ -90,7 +93,7 @@ export default function AdminDashboard({ token }) {
       formData.append("after", after);
       formData.append("description", desc);
 
-      await axios.post("http://localhost:5000/api/transformations", formData, {
+      await axios.post(`${API}/api/transformations`, formData, {
         headers: {
           Authorization: `Bearer ${token}`,
           "Content-Type": "multipart/form-data",

@@ -1,15 +1,14 @@
 import { useEffect, useState } from "react";
 import axios from "axios";
 import { ChevronLeft, ChevronRight } from "lucide-react";
+const API = import.meta.env.VITE_API_URL;
 
 export default function Transformations() {
   const [data, setData] = useState([]);
   const [index, setIndex] = useState(0);
 
   useEffect(() => {
-    axios
-      .get("http://localhost:5000/api/transformations")
-      .then((res) => setData(res.data));
+    axios.get("${API}/api/transformations").then((res) => setData(res.data));
   }, []);
 
   useEffect(() => {

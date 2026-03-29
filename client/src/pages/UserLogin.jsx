@@ -2,7 +2,7 @@ import { useState } from "react";
 import axios from "axios";
 import { useNavigate } from "react-router-dom";
 import toast from "react-hot-toast";
-
+const API = import.meta.env.VITE_API_URL;
 export default function UserLogin() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -11,10 +11,10 @@ export default function UserLogin() {
 
   const login = async () => {
     try {
-      const res = await axios.post(
-        "http://localhost:5000/api/customers/login",
-        { email, password },
-      );
+      const res = await axios.post("${API}/api/customers/login", {
+        email,
+        password,
+      });
 
       // ✅ Store token
       localStorage.setItem("userToken", res.data.token);
