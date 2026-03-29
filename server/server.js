@@ -17,28 +17,37 @@ import { sendEmail } from "./utils/sendEmail.js";
 
 const app = express();
 
-// DEBUG (optional)
-console.log("EMAIL USER:", process.env.EMAIL_USER);
-console.log("EMAIL PASS:", process.env.EMAIL_PASS ? "Loaded ✅" : "Missing ❌");
+// ✅ TRUST PROXY (important for Render)
+app.set("trust proxy", 1);
 
-// DB
+// ✅ CONNECT DB
 connectDB();
 
-// Middleware
-app.use(cors());
+// ✅ CORS (allow all for now — later restrict)
+app.use(
+  cors({
+    origin: "*",
+    credentials: true,
+  }),
+);
+
+// ✅ MIDDLEWARE
 app.use(express.json());
 
-// Routes
+// ✅ ROUTES
 app.use("/api/auth", authRoutes);
 app.use("/api/members", memberRoutes);
 app.use("/api/customers", customerRoutes);
 app.use("/api/transformations", transformationRoutes);
 
+// ✅ HEALTH CHECK (IMPORTANT FOR RENDER)
 app.get("/", (req, res) => {
-  res.send("API Running...");
+  res.status(200).send("API Running...");
 });
 
-// 🔥 CRON JOB (RUNS DAILY AT MIDNIGHT - PRODUCTION)
+// =====================================================
+// 🔥 CRON JOB (RUN DAILY - PRODUCTION)
+// =====================================================
 cron.schedule("0 0 * * *", async () => {
   console.log("⏰ Running expiry check...");
 
@@ -88,11 +97,13 @@ Subscription has expired.
 
     console.log(`✅ Expired processed: ${expiredMembers.length}`);
   } catch (err) {
-    console.log("CRON ERROR:", err.message);
+    console.log("❌ CRON ERROR:", err.message);
   }
 });
 
-// SERVER
+// =====================================================
+// 🚀 SERVER START
+// =====================================================
 const PORT = process.env.PORT || 5000;
 
 app.listen(PORT, () => {
