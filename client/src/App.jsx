@@ -3,6 +3,7 @@ import {
   Routes,
   Route,
   Navigate,
+  useLocation,
 } from "react-router-dom";
 
 import { AuthProvider, useAuth } from "./context/AuthContext";
@@ -51,13 +52,27 @@ function AppRoutes() {
   );
 }
 
+function AppLayout() {
+  const location = useLocation();
+  const isAdminRoute = location.pathname.startsWith('/admin');
+
+  return (
+    <>
+      {!isAdminRoute && <Header />}
+      
+      <div className={!isAdminRoute ? "pt-16 md:pt-[60px]" : ""}>
+        <AppRoutes />
+      </div>
+
+      {!isAdminRoute && <WhatsAppButton />}
+    </>
+  );
+}
+
 export default function App() {
   return (
     <AuthProvider>
       <Router>
-        {/* Global Header */}
-        <Header />
-
         {/* Toast Notifications */}
         <Toaster
           position="top-right"
@@ -86,13 +101,7 @@ export default function App() {
           }}
         />
 
-        {/* Content */}
-        <div className="pt-16 md:pt-[60px]">
-          <AppRoutes />
-        </div>
-
-        {/* Global WhatsApp Button */}
-        <WhatsAppButton />
+        <AppLayout />
       </Router>
     </AuthProvider>
   );
