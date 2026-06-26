@@ -9,7 +9,7 @@ const testimonials = [
   },
   {
     name: "Priya M.",
-    text: "As a woman, I was hesitant to join a gym. But Nizamabad PT Studio's private training made me feel so comfortable. Amazing results!",
+    text: "As a woman, I was hesitant to join a gym. But bemassive_p.t_studio's private training made me feel so comfortable. Amazing results!",
     rating: 5,
   },
   {

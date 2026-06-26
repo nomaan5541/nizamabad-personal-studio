@@ -290,7 +290,7 @@ export default function AdminDashboard() {
             </div>
             <div className="hidden md:block">
               <p className="text-sm font-bold" style={{ fontFamily: "'Outfit', sans-serif" }}>Admin Panel</p>
-              <p className="text-[10px] text-gray-500">Nizamabad PT Studio</p>
+              <p className="text-[10px] text-gray-500">bemassive_p.t_studio</p>
             </div>
           </div>
 

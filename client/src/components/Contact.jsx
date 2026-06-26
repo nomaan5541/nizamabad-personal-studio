@@ -41,7 +41,7 @@ export default function Contact() {
             Visit Our <span className="gradient-text">Studio</span>
           </h2>
           <p className="section-subheading">
-            Nizamabad PT Studio — Private Elite Training Studio.
+            bemassive_p.t_studio — Private Elite Training Studio.
             Walk in or reach out anytime.
           </p>
           <div className="gold-line" />

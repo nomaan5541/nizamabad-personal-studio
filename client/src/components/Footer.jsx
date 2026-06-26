@@ -18,9 +18,9 @@ export default function Footer() {
               <img src="/logo.png" alt="Logo" className="h-10 w-auto object-contain" />
               <div>
                 <h2 className="text-lg font-bold text-white" style={{ fontFamily: "'Outfit', sans-serif" }}>
-                  NIZAMABAD
+                  BEMASSIVE
                 </h2>
-                <p className="text-[#C9A34E] text-[10px] tracking-[3px] uppercase">PT Studio</p>
+                <p className="text-[#C9A34E] text-[10px] tracking-[3px] uppercase">P.T_STUDIO</p>
               </div>
             </div>
             <p className="text-gray-500 text-sm leading-relaxed mt-3">
@@ -105,7 +105,7 @@ export default function Footer() {
         {/* Bottom */}
         <div className="mt-14 pt-6 border-t border-[#1E1E1E] flex flex-col md:flex-row items-center justify-between gap-4">
           <p className="text-gray-600 text-xs">
-            © {new Date().getFullYear()} Nizamabad PT Studio. All rights reserved.
+            © {new Date().getFullYear()} bemassive_p.t_studio. All rights reserved.
           </p>
 
           <div className="flex items-center gap-1 text-gray-600 text-xs">

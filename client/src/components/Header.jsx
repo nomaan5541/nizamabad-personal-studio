@@ -72,17 +72,17 @@ export default function Header() {
           <div className="relative">
             <img
               src="/logo.png"
-              alt="Nizamabad PT Studio"
+              alt="bemassive_p.t_studio"
               className="h-10 w-auto object-contain transition-transform duration-300 group-hover:scale-110"
             />
             <div className="absolute inset-0 bg-[#C9A34E]/20 blur-xl rounded-full opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
           </div>
           <div className="hidden sm:flex flex-col">
             <span className="text-white font-bold tracking-wide text-sm" style={{ fontFamily: "'Outfit', sans-serif" }}>
-              NIZAMABAD
+              BEMASSIVE
             </span>
             <span className="text-[#C9A34E] text-[10px] tracking-[3px] uppercase">
-              PT Studio
+              P.T_STUDIO
             </span>
           </div>
         </div>

@@ -142,7 +142,7 @@ export default function Hero() {
         >
           <Sparkles size={14} className="text-[#C9A34E]" />
           <p className="section-tag mb-0">
-            Nizamabad PT Studio • Private Coaching
+            bemassive_p.t_studio • Private Coaching
           </p>
           <Sparkles size={14} className="text-[#C9A34E]" />
         </div>
