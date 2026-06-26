@@ -343,7 +343,7 @@ export default function BookingPage() {
                   key={slot}
                   type="button"
                   onClick={() => setForm({ ...form, preferred_time: slot })}
-                  className={`px-3 py-2.5 rounded-xl text-xs font-medium border transition-all duration-300 ${
+                  className={`px-1 py-2.5 sm:px-3 rounded-xl text-[10px] sm:text-xs font-medium border transition-all duration-300 ${
                     form.preferred_time === slot
                       ? "border-[#C9A34E] bg-[#C9A34E]/10 text-[#C9A34E]"
                       : "border-[#1E1E1E] text-gray-400 hover:border-[#333] hover:text-white"
