@@ -1,47 +1,54 @@
 import { useState, useEffect } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
-import { Menu, X } from "lucide-react";
+import { Menu, X, Dumbbell } from "lucide-react";
+
+const NAV_LINKS = [
+  { id: "home", label: "Home" },
+  { id: "services", label: "Services" },
+  { id: "pricing", label: "Pricing" },
+  { id: "results", label: "Results" },
+  { id: "coaches", label: "Coaches" },
+  { id: "contact", label: "Contact" },
+];
 
 export default function Header() {
   const [open, setOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
   const [active, setActive] = useState("home");
-
   const navigate = useNavigate();
   const location = useLocation();
 
   useEffect(() => {
     const handleScroll = () => {
-      setScrolled(window.scrollY > 20);
+      setScrolled(window.scrollY > 30);
 
       if (location.pathname === "/") {
-        const sections = ["home", "services", "results", "contact"];
-
-        sections.forEach((id) => {
-          const el = document.getElementById(id);
+        const sections = NAV_LINKS.map((l) => l.id);
+        for (let i = sections.length - 1; i >= 0; i--) {
+          const el = document.getElementById(sections[i]);
           if (el) {
-            const top = el.offsetTop - 140;
-            if (window.scrollY >= top) {
-              setActive(id);
+            const rect = el.getBoundingClientRect();
+            if (rect.top <= 150) {
+              setActive(sections[i]);
+              break;
             }
           }
-        });
+        }
       }
     };
 
-    window.addEventListener("scroll", handleScroll);
+    window.addEventListener("scroll", handleScroll, { passive: true });
     return () => window.removeEventListener("scroll", handleScroll);
   }, [location]);
 
   const scrollToSection = (id) => {
     setOpen(false);
-
     if (location.pathname !== "/") {
       navigate("/");
       setTimeout(() => {
         const el = document.getElementById(id);
         if (el) el.scrollIntoView({ behavior: "smooth" });
-      }, 300);
+      }, 400);
     } else {
       const el = document.getElementById(id);
       if (el) el.scrollIntoView({ behavior: "smooth" });
@@ -50,133 +57,108 @@ export default function Header() {
 
   return (
     <header
-      className={`fixed top-0 w-full z-50 transition-all duration-300 ${
+      className={`fixed top-0 w-full z-50 transition-all duration-500 ${
         scrolled
-          ? "bg-black/80 backdrop-blur border-b border-gray-800"
+          ? "glass-strong shadow-lg"
           : "bg-transparent"
       }`}
     >
-      <div className="max-w-7xl mx-auto flex justify-between items-center px-4 py-3">
-        {/* 🔥 LOGO SECTION */}
+      <div className="max-w-7xl mx-auto flex justify-between items-center px-5 py-3">
+        {/* Logo */}
         <div
-          className="flex items-center gap-3 cursor-pointer"
+          className="flex items-center gap-3 cursor-pointer group"
           onClick={() => scrollToSection("home")}
         >
-          <img
-            src="/logo.png"
-            alt="Nizamabad PT Studio"
-            className="h-10 w-auto object-contain"
-          />
-
-          {/* Optional Text beside logo */}
-          <span className="hidden sm:block text-white font-semibold tracking-wide">
-            Nizamabad PT Studio
-          </span>
+          <div className="relative">
+            <img
+              src="/logo.png"
+              alt="Nizamabad PT Studio"
+              className="h-10 w-auto object-contain transition-transform duration-300 group-hover:scale-110"
+            />
+            <div className="absolute inset-0 bg-[#C9A34E]/20 blur-xl rounded-full opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
+          </div>
+          <div className="hidden sm:flex flex-col">
+            <span className="text-white font-bold tracking-wide text-sm" style={{ fontFamily: "'Outfit', sans-serif" }}>
+              NIZAMABAD
+            </span>
+            <span className="text-[#C9A34E] text-[10px] tracking-[3px] uppercase">
+              PT Studio
+            </span>
+          </div>
         </div>
 
-        {/* DESKTOP NAV */}
-        <nav className="hidden md:flex items-center gap-8 text-sm">
-          <button
-            onClick={() => scrollToSection("home")}
-            className={`transition ${
-              active === "home"
-                ? "text-white"
-                : "text-gray-400 hover:text-white"
-            }`}
-          >
-            Home
-          </button>
+        {/* Desktop Nav */}
+        <nav className="hidden lg:flex items-center gap-1">
+          {NAV_LINKS.map((link) => (
+            <button
+              key={link.id}
+              onClick={() => scrollToSection(link.id)}
+              className={`relative px-4 py-2 text-sm font-medium rounded-lg transition-all duration-300 ${
+                active === link.id
+                  ? "text-[#C9A34E]"
+                  : "text-gray-400 hover:text-white"
+              }`}
+            >
+              {link.label}
+              {active === link.id && (
+                <span className="absolute bottom-0 left-1/2 -translate-x-1/2 w-5 h-[2px] bg-[#C9A34E] rounded-full" />
+              )}
+            </button>
+          ))}
 
           <button
-            onClick={() => scrollToSection("services")}
-            className={`transition ${
-              active === "services"
-                ? "text-white"
-                : "text-gray-400 hover:text-white"
-            }`}
+            onClick={() => navigate("/booking")}
+            className="ml-4 btn-primary text-sm px-6 py-2.5 flex items-center gap-2"
           >
-            Services
-          </button>
-
-          <button
-            onClick={() => scrollToSection("results")}
-            className={`transition ${
-              active === "results"
-                ? "text-white"
-                : "text-gray-400 hover:text-white"
-            }`}
-          >
-            Results
-          </button>
-
-          <button
-            onClick={() => scrollToSection("contact")}
-            className={`transition ${
-              active === "contact"
-                ? "text-white"
-                : "text-gray-400 hover:text-white"
-            }`}
-          >
-            Contact
-          </button>
-
-          {/* CTA */}
-          <button
-            onClick={() => navigate("/login")}
-            className="bg-[#C9A34E] text-black px-5 py-2 rounded-xl font-medium hover:scale-105 hover:shadow-lg transition"
-          >
-            Join Now
+            <Dumbbell size={16} />
+            Book Now
           </button>
         </nav>
 
-        {/* MOBILE ICON */}
-        <button onClick={() => setOpen(!open)} className="md:hidden text-white">
-          {open ? <X size={26} /> : <Menu size={26} />}
+        {/* Mobile Toggle */}
+        <button
+          onClick={() => setOpen(!open)}
+          className="lg:hidden text-white p-2 rounded-lg hover:bg-white/5 transition-colors"
+        >
+          {open ? <X size={24} /> : <Menu size={24} />}
         </button>
       </div>
 
-      {/* MOBILE MENU */}
-      {open && (
-        <div className="md:hidden bg-black border-t border-gray-800 px-6 py-6 space-y-5 text-center">
-          <button
-            onClick={() => scrollToSection("home")}
-            className="block w-full text-gray-300 hover:text-white"
-          >
-            Home
-          </button>
+      {/* Mobile Menu */}
+      <div
+        className={`lg:hidden overflow-hidden transition-all duration-500 ease-in-out ${
+          open ? "max-h-[500px] opacity-100" : "max-h-0 opacity-0"
+        }`}
+      >
+        <div className="glass-strong border-t border-white/5 px-6 py-6 space-y-1">
+          {NAV_LINKS.map((link) => (
+            <button
+              key={link.id}
+              onClick={() => scrollToSection(link.id)}
+              className={`block w-full text-left px-4 py-3 rounded-xl text-sm font-medium transition-all duration-300 ${
+                active === link.id
+                  ? "text-[#C9A34E] bg-[#C9A34E]/10"
+                  : "text-gray-300 hover:text-white hover:bg-white/5"
+              }`}
+            >
+              {link.label}
+            </button>
+          ))}
 
-          <button
-            onClick={() => scrollToSection("services")}
-            className="block w-full text-gray-300 hover:text-white"
-          >
-            Services
-          </button>
-
-          <button
-            onClick={() => scrollToSection("results")}
-            className="block w-full text-gray-300 hover:text-white"
-          >
-            Results
-          </button>
-
-          <button
-            onClick={() => scrollToSection("contact")}
-            className="block w-full text-gray-300 hover:text-white"
-          >
-            Contact
-          </button>
-
-          <button
-            onClick={() => {
-              setOpen(false);
-              navigate("/login");
-            }}
-            className="w-full bg-[#C9A34E] text-black py-2 rounded-xl font-medium"
-          >
-            Join Now
-          </button>
+          <div className="pt-3">
+            <button
+              onClick={() => {
+                setOpen(false);
+                navigate("/booking");
+              }}
+              className="w-full btn-primary py-3 flex items-center justify-center gap-2"
+            >
+              <Dumbbell size={16} />
+              Book Now
+            </button>
+          </div>
         </div>
-      )}
+      </div>
     </header>
   );
 }

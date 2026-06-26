@@ -1,15 +1,23 @@
 import Hero from "../components/Hero";
 import Services from "../components/Services";
-import Transformations from "./Transformations"; // 👈 ADD THIS
+import Stats from "../components/Stats";
+import Pricing from "../components/Pricing";
+import Transformations from "../components/Transformations";
+import Testimonials from "../components/Testimonials";
+import Coaches from "../components/Coaches";
 import Contact from "../components/Contact";
-import Footer from "../components/Footer"; // 👈 ADD FOOTER
+import Footer from "../components/Footer";
 
 export default function Home() {
   return (
-    <div className="bg-black text-white">
+    <div className="bg-[#050505] text-white grain-overlay">
       <Hero />
+      <Stats />
       <Services />
-      <Transformations /> {/* 🔥 SCROLL RESULTS */}
+      <Pricing />
+      <Transformations />
+      <Testimonials />
+      <Coaches />
       <Contact />
       <Footer />
     </div>
