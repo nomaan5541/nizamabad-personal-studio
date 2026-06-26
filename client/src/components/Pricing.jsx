@@ -67,7 +67,7 @@ function PricingCard({ plan, index }) {
 
   return (
     <div
-      className={`animate-on-scroll relative p-8 rounded-3xl border ${plan.borderColor} ${plan.hoverBorder} transition-all duration-500 overflow-hidden group ${
+      className={`animate-on-scroll relative px-8 pb-8 ${plan.popular ? 'pt-14' : 'pt-8'} rounded-3xl border ${plan.borderColor} ${plan.hoverBorder} transition-all duration-500 overflow-hidden group ${
         plan.popular
           ? "bg-gradient-to-b from-[#C9A34E]/5 to-[#111] scale-[1.02] lg:scale-105"
           : "bg-[#111]"
@@ -76,8 +76,8 @@ function PricingCard({ plan, index }) {
     >
       {/* Popular badge */}
       {plan.popular && (
-        <div className="absolute top-0 left-1/2 -translate-x-1/2 -translate-y-1/2">
-          <span className="bg-[#C9A34E] text-black text-xs font-bold px-4 py-1.5 rounded-full uppercase tracking-wider">
+        <div className="absolute top-0 left-0 w-full bg-[#C9A34E] py-1.5 text-center z-20">
+          <span className="text-black text-[10px] font-bold uppercase tracking-[0.2em]">
             Most Popular
           </span>
         </div>
