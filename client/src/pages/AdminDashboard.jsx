@@ -43,6 +43,18 @@ export default function AdminDashboard() {
     subscription_end: "",
   });
 
+  // Accept booking state
+  const [showAcceptModal, setShowAcceptModal] = useState(false);
+  const [acceptingBooking, setAcceptingBooking] = useState(null);
+  const [acceptForm, setAcceptForm] = useState({
+    name: "",
+    email: "",
+    phone: "",
+    plan: "Basic",
+    subscription_end: "",
+  });
+  const [quickDate, setQuickDate] = useState("30");
+
   // Upload state
   const [before, setBefore] = useState(null);
   const [after, setAfter] = useState(null);
@@ -109,6 +121,58 @@ export default function AdminDashboard() {
       )
     );
     toast.success(newStatus ? "Activated ✅" : "Deactivated ❌");
+  };
+
+  const openAcceptBooking = (b) => {
+    setAcceptingBooking(b);
+    
+    // Format plan to uppercase first letter
+    let formattedPlan = "Basic";
+    if (b.plan) {
+      formattedPlan = b.plan.charAt(0).toUpperCase() + b.plan.slice(1).toLowerCase();
+      if (!["Basic", "Pro", "Elite"].includes(formattedPlan)) formattedPlan = "Basic";
+    }
+
+    setAcceptForm({
+      name: b.name || "",
+      email: b.email || "",
+      phone: b.phone || "",
+      plan: formattedPlan,
+      subscription_end: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString().split('T')[0],
+    });
+    setQuickDate("30");
+    setShowAcceptModal(true);
+  };
+
+  const handleQuickDateChange = (days) => {
+    setQuickDate(days);
+    if (days !== "custom") {
+      setAcceptForm({
+        ...acceptForm,
+        subscription_end: new Date(Date.now() + parseInt(days) * 24 * 60 * 60 * 1000).toISOString().split('T')[0]
+      });
+    }
+  };
+
+  const confirmAcceptBooking = async (e) => {
+    e.preventDefault();
+    try {
+      // 1. Insert Member
+      const { error: memberError } = await supabase.from("members").insert([
+        { ...acceptForm, subscription_active: true }
+      ]);
+      if (memberError) throw memberError;
+
+      // 2. Update Booking
+      const { error: bookingError } = await supabase.from("bookings").update({ status: "confirmed" }).eq("id", acceptingBooking.id);
+      if (bookingError) throw bookingError;
+      
+      toast.success("Booking confirmed & Member added! 🎉");
+      setShowAcceptModal(false);
+      fetchData();
+    } catch (err) {
+      toast.error("Error confirming booking");
+    }
   };
 
   const updateBookingStatus = async (id, status) => {
@@ -518,7 +582,7 @@ export default function AdminDashboard() {
                       {b.status === "pending" && (
                         <div className="flex gap-2 shrink-0">
                           <button
-                            onClick={() => updateBookingStatus(b.id, "confirmed")}
+                            onClick={() => openAcceptBooking(b)}
                             className="px-4 py-2 rounded-xl bg-green-500/10 text-green-400 border border-green-500/20 text-sm font-medium hover:bg-green-500/20 transition-colors"
                           >
                             Accept
@@ -682,6 +746,107 @@ export default function AdminDashboard() {
                 </div>
                 <button type="submit" className="w-full btn-primary py-3 mt-4">
                   {editingMember ? "Save Changes" : "Add Member"}
+                </button>
+              </form>
+            </div>
+          </div>
+        )}
+
+        {/* ═══════════ ACCEPT BOOKING MODAL ═══════════ */}
+        {showAcceptModal && (
+          <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 p-4">
+            <div className="bg-[#0A0A0A] border border-[#1E1E1E] rounded-3xl w-full max-w-lg overflow-hidden">
+              <div className="flex justify-between items-center p-6 border-b border-[#1E1E1E]">
+                <h2 className="text-xl font-bold" style={{ fontFamily: "'Outfit', sans-serif" }}>
+                  Confirm Booking & Add Member
+                </h2>
+                <button onClick={() => setShowAcceptModal(false)} className="text-gray-400 hover:text-white">
+                  <X size={20} />
+                </button>
+              </div>
+              <form onSubmit={confirmAcceptBooking} className="p-6 space-y-4">
+                <div className="grid grid-cols-2 gap-4">
+                  <div>
+                    <label className="block text-sm text-gray-400 mb-1">Full Name *</label>
+                    <input
+                      required
+                      type="text"
+                      className="input-field"
+                      value={acceptForm.name}
+                      onChange={(e) => setAcceptForm({ ...acceptForm, name: e.target.value })}
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-sm text-gray-400 mb-1">Email *</label>
+                    <input
+                      required
+                      type="email"
+                      className="input-field"
+                      value={acceptForm.email}
+                      onChange={(e) => setAcceptForm({ ...acceptForm, email: e.target.value })}
+                    />
+                  </div>
+                </div>
+                <div className="grid grid-cols-2 gap-4">
+                  <div>
+                    <label className="block text-sm text-gray-400 mb-1">Phone</label>
+                    <input
+                      type="text"
+                      className="input-field"
+                      value={acceptForm.phone}
+                      onChange={(e) => setAcceptForm({ ...acceptForm, phone: e.target.value })}
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-sm text-gray-400 mb-1">Plan</label>
+                    <select
+                      className="input-field"
+                      value={acceptForm.plan}
+                      onChange={(e) => setAcceptForm({ ...acceptForm, plan: e.target.value })}
+                    >
+                      <option value="Basic">Basic</option>
+                      <option value="Pro">Pro</option>
+                      <option value="Elite">Elite</option>
+                    </select>
+                  </div>
+                </div>
+
+                <div className="pt-2 border-t border-[#1E1E1E]">
+                  <label className="block text-sm text-gray-400 mb-3">Subscription Duration</label>
+                  <div className="grid grid-cols-4 gap-2 mb-4">
+                    {["30", "60", "90", "custom"].map((days) => (
+                      <button
+                        key={days}
+                        type="button"
+                        onClick={() => handleQuickDateChange(days)}
+                        className={`py-2 rounded-lg text-xs font-medium border transition-colors ${
+                          quickDate === days
+                            ? "bg-[#C9A34E]/20 border-[#C9A34E] text-[#C9A34E]"
+                            : "bg-transparent border-[#333] text-gray-400 hover:border-gray-500"
+                        }`}
+                      >
+                        {days === "custom" ? "Custom" : `${days} Days`}
+                      </button>
+                    ))}
+                  </div>
+
+                  <div>
+                    <label className="block text-sm text-gray-400 mb-1">End Date *</label>
+                    <input
+                      required
+                      type="date"
+                      className="input-field"
+                      value={acceptForm.subscription_end}
+                      onChange={(e) => {
+                        setQuickDate("custom");
+                        setAcceptForm({ ...acceptForm, subscription_end: e.target.value });
+                      }}
+                    />
+                  </div>
+                </div>
+
+                <button type="submit" className="w-full btn-primary py-3 mt-4 flex items-center justify-center gap-2">
+                  <CheckCircle size={18} /> Accept Booking & Create Member
                 </button>
               </form>
             </div>
