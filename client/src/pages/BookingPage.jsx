@@ -390,7 +390,7 @@ export default function BookingPage() {
             ) : (
               <>
                 <Sparkles size={20} />
-                Book Your Session — Starting ₹6,499/mo
+                Book Your Session — ₹{plans.find(p => p.id === form.plan)?.price || "6,499"}/mo
               </>
             )}
           </button>
