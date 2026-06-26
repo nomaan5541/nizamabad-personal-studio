@@ -166,7 +166,7 @@ export default function Pricing() {
     <section
       id="pricing"
       ref={sectionRef}
-      className="pt-20 pb-10 md:pt-28 md:pb-16 px-5 relative overflow-hidden"
+      className="pt-20 pb-8 md:pt-28 md:pb-12 px-5 relative overflow-hidden"
       style={{
         background: "linear-gradient(180deg, #050505 0%, #0a0a08 50%, #050505 100%)",
       }}

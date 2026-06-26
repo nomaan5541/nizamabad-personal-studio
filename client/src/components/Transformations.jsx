@@ -98,7 +98,7 @@ export default function Transformations() {
     <section
       id="results"
       ref={sectionRef}
-      className="py-20 md:py-28 px-5 relative overflow-hidden"
+      className="pt-8 pb-8 md:pt-12 md:pb-12 px-5 relative overflow-hidden"
       style={{
         background: "linear-gradient(180deg, #050505 0%, #0a0a0a 50%, #050505 100%)",
       }}
