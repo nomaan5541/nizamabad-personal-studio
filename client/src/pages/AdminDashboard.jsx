@@ -20,17 +20,7 @@ import { supabase } from "../lib/supabase";
 import { useAuth } from "../context/AuthContext";
 import toast from "react-hot-toast";
 
-// Demo data for when Supabase tables aren't set up yet
-const demoMembers = [
-  { id: "1", name: "Rahul Kumar", email: "rahul@example.com", phone: "9876543210", plan: "Pro", subscription_active: true, subscription_end: "2026-07-26" },
-  { id: "2", name: "Priya Sharma", email: "priya@example.com", phone: "9876543211", plan: "Elite", subscription_active: true, subscription_end: "2026-08-15" },
-  { id: "3", name: "Ahmed Ali", email: "ahmed@example.com", phone: "9876543212", plan: "Basic", subscription_active: false, subscription_end: "2026-06-01" },
-];
 
-const demoBookings = [
-  { id: "1", name: "Vikram Joshi", email: "vikram@email.com", phone: "9876543213", plan: "pro", preferred_time: "6:00 AM - 7:00 AM", status: "pending", created_at: "2026-06-25T10:00:00Z" },
-  { id: "2", name: "Sneha Reddy", email: "sneha@email.com", phone: "9876543214", plan: "elite", preferred_time: "7:00 PM - 8:00 PM", status: "pending", created_at: "2026-06-24T14:00:00Z" },
-];
 
 export default function AdminDashboard() {
   const navigate = useNavigate();
@@ -85,11 +75,11 @@ export default function AdminDashboard() {
         .select("*")
         .order("created_at", { ascending: false });
 
-      setMembers(membersData?.length ? membersData : demoMembers);
-      setBookings(bookingsData?.length ? bookingsData : demoBookings);
+      setMembers(membersData || []);
+      setBookings(bookingsData || []);
     } catch {
-      setMembers(demoMembers);
-      setBookings(demoBookings);
+      setMembers([]);
+      setBookings([]);
     } finally {
       setLoadingData(false);
     }
