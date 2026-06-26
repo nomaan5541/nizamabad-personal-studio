@@ -77,7 +77,7 @@ export default function Transformations() {
 
     if (sectionRef.current) observer.observe(sectionRef.current);
     return () => observer.disconnect();
-  }, []);
+  }, [data]);
 
   const next = () => setIndex((prev) => (prev + 1) % data.length);
   const prev = () => setIndex((prev) => (prev === 0 ? data.length - 1 : prev - 1));

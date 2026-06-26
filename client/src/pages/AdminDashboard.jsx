@@ -15,6 +15,7 @@ import {
   X,
   RefreshCw,
   FileText,
+  Image as ImageIcon,
 } from "lucide-react";
 import { supabase } from "../lib/supabase";
 import { useAuth } from "../context/AuthContext";
@@ -60,6 +61,11 @@ export default function AdminDashboard() {
   const [title, setTitle] = useState("");
   const [uploading, setUploading] = useState(false);
 
+  // Gallery state
+  const [gallery, setGallery] = useState([]);
+  const [galleryUrl, setGalleryUrl] = useState("");
+  const [addingGallery, setAddingGallery] = useState(false);
+
   useEffect(() => {
     if (!authLoading && !isAdmin) {
       navigate("/admin");
@@ -85,11 +91,19 @@ export default function AdminDashboard() {
         .select("*")
         .order("created_at", { ascending: false });
 
+      // Fetch gallery
+      const { data: galleryData } = await supabase
+        .from("gallery")
+        .select("*")
+        .order("created_at", { ascending: false });
+
       setMembers(membersData?.length ? membersData : demoMembers);
       setBookings(bookingsData?.length ? bookingsData : demoBookings);
+      setGallery(galleryData?.length ? galleryData : []);
     } catch {
       setMembers(demoMembers);
       setBookings(demoBookings);
+      setGallery([]);
     } finally {
       setLoadingData(false);
     }
@@ -234,6 +248,32 @@ export default function AdminDashboard() {
     }
   };
 
+  const addGalleryImage = async () => {
+    if (!galleryUrl) return;
+    setAddingGallery(true);
+    try {
+      await supabase.from("gallery").insert([{ url: galleryUrl }]);
+      toast.success("Photo added to gallery!");
+      setGalleryUrl("");
+      fetchData();
+    } catch {
+      toast.error("Error adding photo");
+    } finally {
+      setAddingGallery(false);
+    }
+  };
+
+  const deleteGalleryImage = async (id) => {
+    if (!window.confirm("Remove this photo from gallery?")) return;
+    try {
+      await supabase.from("gallery").delete().eq("id", id);
+      setGallery((prev) => prev.filter((p) => p.id !== id));
+      toast.success("Photo removed!");
+    } catch {
+      toast.error("Error removing photo");
+    }
+  };
+
   const openAddMember = () => {
     setEditingMember(null);
     setMemberForm({
@@ -277,6 +317,7 @@ export default function AdminDashboard() {
     { id: "members", label: "Members", icon: Users },
     { id: "bookings", label: "Bookings", icon: Calendar },
     { id: "upload", label: "Upload", icon: Upload },
+    { id: "gallery", label: "Gallery", icon: ImageIcon },
   ];
 
   return (
@@ -621,6 +662,49 @@ export default function AdminDashboard() {
                   {uploading ? "Uploading..." : "Upload Transformation"}
                 </button>
               </div>
+            </div>
+          </div>
+        )}
+
+        {/* ═══════════ GALLERY ═══════════ */}
+        {activeTab === "gallery" && (
+          <div className="page-enter">
+            <h1 className="text-3xl font-bold mb-6" style={{ fontFamily: "'Outfit', sans-serif" }}>
+              Gallery Management
+            </h1>
+            
+            <div className="card mb-8">
+              <h2 className="text-lg font-bold mb-4">Add New Photo</h2>
+              <div className="flex gap-4">
+                <input
+                  type="text"
+                  placeholder="Paste direct image URL (e.g., https://example.com/photo.jpg)"
+                  className="input-field flex-1"
+                  value={galleryUrl}
+                  onChange={(e) => setGalleryUrl(e.target.value)}
+                />
+                <button
+                  onClick={addGalleryImage}
+                  disabled={addingGallery}
+                  className="btn-primary py-3 whitespace-nowrap"
+                >
+                  {addingGallery ? "Adding..." : "Add Photo"}
+                </button>
+              </div>
+            </div>
+
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+              {gallery.map((photo) => (
+                <div key={photo.id} className="relative aspect-square rounded-xl overflow-hidden group border border-[#1E1E1E]">
+                  <img src={photo.url} className="w-full h-full object-cover" alt="Gallery" />
+                  <button
+                    onClick={() => deleteGalleryImage(photo.id)}
+                    className="absolute top-2 right-2 bg-red-500 text-white p-2 rounded-lg opacity-0 group-hover:opacity-100 transition-opacity"
+                  >
+                    <X size={16} />
+                  </button>
+                </div>
+              ))}
             </div>
           </div>
         )}
