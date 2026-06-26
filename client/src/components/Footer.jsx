@@ -82,7 +82,7 @@ export default function Footer() {
             </h3>
             <div className="space-y-3">
               {[
-                { label: "Studio Page", handle: "@bemassive_nzb_p.tstudio", url: "https://www.instagram.com/bemassive_nzb_p.tstudio" },
+                { label: "Studio Page", handle: "@bemassive_p.t_studio", url: "https://www.instagram.com/bemassive_p.t_studio" },
                 { label: "Coach Syed", handle: "@bemassive_with_syed", url: "https://www.instagram.com/bemassive_with_syed" },
                 { label: "Coach Fatima", handle: "@bemassive_with_fatima", url: "https://www.instagram.com/bemassive_with_fatima" },
               ].map((s) => (

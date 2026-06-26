@@ -138,13 +138,13 @@ export default function Coaches() {
       {/* Studio link */}
       <div className="animate-on-scroll text-center mt-12 relative z-10">
         <a
-          href="https://www.instagram.com/bemassive_nzb_p.tstudio"
+          href="https://www.instagram.com/bemassive_p.t_studio"
           target="_blank"
           rel="noopener noreferrer"
           className="inline-flex items-center gap-2 text-sm text-gray-400 hover:text-[#C9A34E] transition-colors duration-300"
         >
           <Instagram size={16} />
-          Follow our studio @bemassive_nzb_p.tstudio
+          Follow our studio @bemassive_p.t_studio
           <ExternalLink size={12} />
         </a>
       </div>
