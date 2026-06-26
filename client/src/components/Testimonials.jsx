@@ -92,7 +92,7 @@ export default function Testimonials() {
   return (
     <section
       ref={sectionRef}
-      className="py-20 md:py-28 relative overflow-hidden"
+      className="pt-10 pb-20 md:pt-16 md:pb-28 relative overflow-hidden"
       style={{
         background: "linear-gradient(180deg, #050505 0%, #0a0a0a 50%, #050505 100%)",
       }}
