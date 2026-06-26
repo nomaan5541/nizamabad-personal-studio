@@ -108,10 +108,7 @@ export default function BookingPage() {
         },
       ]);
 
-      if (error) {
-        // If table doesn't exist yet, show success anyway for demo
-        console.log("Supabase insert error (table may not exist yet):", error.message);
-      }
+      if (error) throw error;
 
       toast.success("Booking submitted successfully! 🎉");
       setSubmitted(true);
