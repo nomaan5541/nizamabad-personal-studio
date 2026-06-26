@@ -42,6 +42,17 @@ export default function AdminDashboard() {
   const [search, setSearch] = useState("");
   const [loadingData, setLoadingData] = useState(true);
 
+  // Member modal state
+  const [showMemberModal, setShowMemberModal] = useState(false);
+  const [editingMember, setEditingMember] = useState(null);
+  const [memberForm, setMemberForm] = useState({
+    name: "",
+    email: "",
+    phone: "",
+    plan: "Basic",
+    subscription_end: "",
+  });
+
   // Upload state
   const [before, setBefore] = useState(null);
   const [after, setAfter] = useState(null);
@@ -171,6 +182,82 @@ export default function AdminDashboard() {
     }
   };
 
+  const handleMemberSubmit = async (e) => {
+    e.preventDefault();
+    if (!memberForm.name || !memberForm.email) {
+      toast.error("Name and Email are required");
+      return;
+    }
+    
+    try {
+      if (editingMember) {
+        await supabase
+          .from("members")
+          .update(memberForm)
+          .eq("id", editingMember.id);
+        toast.success("Member updated!");
+      } else {
+        await supabase
+          .from("members")
+          .insert([
+            { ...memberForm, subscription_active: true }
+          ]);
+        toast.success("Member added!");
+      }
+      setShowMemberModal(false);
+      setEditingMember(null);
+      fetchData();
+    } catch (err) {
+      toast.error("Error saving member");
+    }
+  };
+
+  const deleteMember = async (id) => {
+    if (!window.confirm("Are you sure you want to delete this member?")) return;
+    try {
+      await supabase.from("members").delete().eq("id", id);
+      setMembers((prev) => prev.filter((m) => m.id !== id));
+      toast.success("Member deleted!");
+    } catch {
+      toast.error("Error deleting member");
+    }
+  };
+
+  const deleteBooking = async (id) => {
+    if (!window.confirm("Are you sure you want to delete this booking?")) return;
+    try {
+      await supabase.from("bookings").delete().eq("id", id);
+      setBookings((prev) => prev.filter((b) => b.id !== id));
+      toast.success("Booking deleted!");
+    } catch {
+      toast.error("Error deleting booking");
+    }
+  };
+
+  const openAddMember = () => {
+    setEditingMember(null);
+    setMemberForm({
+      name: "",
+      email: "",
+      phone: "",
+      plan: "Basic",
+      subscription_end: "",
+    });
+    setShowMemberModal(true);
+  };
+
+  const openEditMember = (m) => {
+    setEditingMember(m);
+    setMemberForm({
+      name: m.name,
+      email: m.email,
+      phone: m.phone || "",
+      plan: m.plan || "Basic",
+      subscription_end: m.subscription_end || "",
+    });
+    setShowMemberModal(true);
+  };
+
   const getDaysLeft = (end) => {
     if (!end) return 0;
     const diff = new Date(end) - new Date();
@@ -298,9 +385,17 @@ export default function AdminDashboard() {
               <h1 className="text-3xl font-bold" style={{ fontFamily: "'Outfit', sans-serif" }}>
                 Members
               </h1>
-              <button onClick={fetchData} className="p-2 rounded-lg hover:bg-white/5 text-gray-400 hover:text-white transition-colors">
-                <RefreshCw size={18} />
-              </button>
+              <div className="flex items-center gap-3">
+                <button
+                  onClick={openAddMember}
+                  className="px-4 py-2 bg-[#C9A34E] text-black rounded-lg text-sm font-bold hover:bg-[#b08d40] transition-colors"
+                >
+                  + Add Member
+                </button>
+                <button onClick={fetchData} className="p-2 rounded-lg hover:bg-white/5 text-gray-400 hover:text-white transition-colors">
+                  <RefreshCw size={18} />
+                </button>
+              </div>
             </div>
 
             {/* Search */}
@@ -347,20 +442,34 @@ export default function AdminDashboard() {
                         <p>Days Left: {getDaysLeft(m.subscription_end)}</p>
                       </div>
 
-                      <button
-                        onClick={() => toggleMember(m.id)}
-                        className={`flex items-center justify-center gap-2 py-2.5 rounded-xl text-sm font-medium transition-all duration-300 ${
-                          m.subscription_active
-                            ? "bg-green-500/10 text-green-400 border border-green-500/20 hover:bg-green-500/20"
-                            : "bg-red-500/10 text-red-400 border border-red-500/20 hover:bg-red-500/20"
-                        }`}
-                      >
-                        {m.subscription_active ? (
-                          <><CheckCircle size={14} /> Active</>
-                        ) : (
-                          <><XCircle size={14} /> Inactive</>
-                        )}
-                      </button>
+                      <div className="flex gap-2">
+                        <button
+                          onClick={() => toggleMember(m.id)}
+                          className={`flex-1 flex items-center justify-center gap-2 py-2.5 rounded-xl text-sm font-medium transition-all duration-300 ${
+                            m.subscription_active
+                              ? "bg-green-500/10 text-green-400 border border-green-500/20 hover:bg-green-500/20"
+                              : "bg-red-500/10 text-red-400 border border-red-500/20 hover:bg-red-500/20"
+                          }`}
+                        >
+                          {m.subscription_active ? (
+                            <><CheckCircle size={14} /> Active</>
+                          ) : (
+                            <><XCircle size={14} /> Inactive</>
+                          )}
+                        </button>
+                        <button
+                          onClick={() => openEditMember(m)}
+                          className="px-3 py-2.5 rounded-xl bg-gray-500/10 text-gray-400 hover:bg-gray-500/20 transition-colors"
+                        >
+                          Edit
+                        </button>
+                        <button
+                          onClick={() => deleteMember(m.id)}
+                          className="px-3 py-2.5 rounded-xl bg-red-500/10 text-red-400 hover:bg-red-500/20 transition-colors"
+                        >
+                          <X size={16} />
+                        </button>
+                      </div>
                     </div>
                   ))}
               </div>
@@ -429,6 +538,16 @@ export default function AdminDashboard() {
                             className="px-4 py-2 rounded-xl bg-red-500/10 text-red-400 border border-red-500/20 text-sm font-medium hover:bg-red-500/20 transition-colors"
                           >
                             Reject
+                          </button>
+                        </div>
+                      )}
+                      {b.status !== "pending" && (
+                        <div className="flex gap-2 shrink-0">
+                          <button
+                            onClick={() => deleteBooking(b.id)}
+                            className="px-4 py-2 rounded-xl bg-red-500/10 text-red-400 border border-red-500/20 text-sm font-medium hover:bg-red-500/20 transition-colors"
+                          >
+                            Delete
                           </button>
                         </div>
                       )}
@@ -502,6 +621,79 @@ export default function AdminDashboard() {
                   {uploading ? "Uploading..." : "Upload Transformation"}
                 </button>
               </div>
+            </div>
+          </div>
+        )}
+
+        {/* ═══════════ MEMBER MODAL ═══════════ */}
+        {showMemberModal && (
+          <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 p-4">
+            <div className="bg-[#0A0A0A] border border-[#1E1E1E] rounded-3xl w-full max-w-lg overflow-hidden">
+              <div className="flex justify-between items-center p-6 border-b border-[#1E1E1E]">
+                <h2 className="text-xl font-bold" style={{ fontFamily: "'Outfit', sans-serif" }}>
+                  {editingMember ? "Edit Member" : "Add New Member"}
+                </h2>
+                <button onClick={() => setShowMemberModal(false)} className="text-gray-400 hover:text-white">
+                  <X size={20} />
+                </button>
+              </div>
+              <form onSubmit={handleMemberSubmit} className="p-6 space-y-4">
+                <div>
+                  <label className="block text-sm text-gray-400 mb-1">Full Name *</label>
+                  <input
+                    required
+                    type="text"
+                    className="input-field"
+                    value={memberForm.name}
+                    onChange={(e) => setMemberForm({ ...memberForm, name: e.target.value })}
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm text-gray-400 mb-1">Email *</label>
+                  <input
+                    required
+                    type="email"
+                    className="input-field"
+                    value={memberForm.email}
+                    onChange={(e) => setMemberForm({ ...memberForm, email: e.target.value })}
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm text-gray-400 mb-1">Phone</label>
+                  <input
+                    type="text"
+                    className="input-field"
+                    value={memberForm.phone}
+                    onChange={(e) => setMemberForm({ ...memberForm, phone: e.target.value })}
+                  />
+                </div>
+                <div className="grid grid-cols-2 gap-4">
+                  <div>
+                    <label className="block text-sm text-gray-400 mb-1">Plan</label>
+                    <select
+                      className="input-field"
+                      value={memberForm.plan}
+                      onChange={(e) => setMemberForm({ ...memberForm, plan: e.target.value })}
+                    >
+                      <option value="Basic">Basic</option>
+                      <option value="Pro">Pro</option>
+                      <option value="Elite">Elite</option>
+                    </select>
+                  </div>
+                  <div>
+                    <label className="block text-sm text-gray-400 mb-1">End Date</label>
+                    <input
+                      type="date"
+                      className="input-field"
+                      value={memberForm.subscription_end}
+                      onChange={(e) => setMemberForm({ ...memberForm, subscription_end: e.target.value })}
+                    />
+                  </div>
+                </div>
+                <button type="submit" className="w-full btn-primary py-3 mt-4">
+                  {editingMember ? "Save Changes" : "Add Member"}
+                </button>
+              </form>
             </div>
           </div>
         )}
