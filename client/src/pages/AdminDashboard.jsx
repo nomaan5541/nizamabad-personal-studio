@@ -678,7 +678,7 @@ export default function AdminDashboard() {
               <div className="flex gap-4">
                 <input
                   type="text"
-                  placeholder="Paste direct image URL (e.g., https://example.com/photo.jpg)"
+                  placeholder="Paste image URL or Instagram post link (e.g. instagram.com/p/...)"
                   className="input-field flex-1"
                   value={galleryUrl}
                   onChange={(e) => setGalleryUrl(e.target.value)}

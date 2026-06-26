@@ -1,6 +1,15 @@
 import { useEffect, useRef, useState } from "react";
 import { supabase } from "../lib/supabase";
 
+const getInstagramEmbedUrl = (url) => {
+  if (url.includes("instagram.com/p/") || url.includes("instagram.com/reel/")) {
+    // Strip query parameters and trailing slashes
+    const baseUrl = url.split("?")[0].replace(/\/$/, "");
+    return `${baseUrl}/embed`;
+  }
+  return null;
+};
+
 export default function Gallery() {
   const [photos, setPhotos] = useState([]);
   const sectionRef = useRef(null);
@@ -65,22 +74,37 @@ export default function Gallery() {
         </div>
       </div>
 
-      <div className="max-w-4xl mx-auto grid grid-cols-3 gap-1 md:gap-3 relative z-10 stagger-children">
-        {photos.map((photo) => (
-          <div
-            key={photo.id}
-            className="animate-on-scroll aspect-square overflow-hidden rounded-xl bg-[#111] border border-[#1E1E1E] group"
-          >
-            <img
-              src={photo.url}
-              alt="Gallery Photo"
-              className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110"
-              onError={(e) => {
-                e.target.src = "https://via.placeholder.com/400x400/111111/C9A34E?text=Photo+Unavailable";
-              }}
-            />
-          </div>
-        ))}
+      <div className="max-w-4xl mx-auto grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-3 md:gap-4 relative z-10 stagger-children">
+        {photos.map((photo) => {
+          const igEmbedUrl = getInstagramEmbedUrl(photo.url);
+
+          return (
+            <div
+              key={photo.id}
+              className="animate-on-scroll aspect-square overflow-hidden rounded-xl bg-[#111] border border-[#1E1E1E] group relative"
+            >
+              {igEmbedUrl ? (
+                <iframe
+                  src={igEmbedUrl}
+                  className="absolute inset-0 w-full h-full border-0 pointer-events-auto"
+                  scrolling="no"
+                  allowTransparency="true"
+                  allow="encrypted-media"
+                  title="Instagram Embed"
+                />
+              ) : (
+                <img
+                  src={photo.url}
+                  alt="Gallery Photo"
+                  className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110 pointer-events-none"
+                  onError={(e) => {
+                    e.target.src = "https://via.placeholder.com/400x400/111111/C9A34E?text=Photo+Unavailable";
+                  }}
+                />
+              )}
+            </div>
+          );
+        })}
       </div>
     </section>
   );
