@@ -50,7 +50,13 @@ export default function Gallery() {
     return () => observer.disconnect();
   }, [photos]);
 
-  if (photos.length === 0) return null;
+  if (photos.length === 0) {
+    return (
+      <section className="py-12 md:py-20 px-5 text-center text-gray-500 bg-[#050505]">
+        <p>No photos in gallery yet. Add some from the Admin Dashboard!</p>
+      </section>
+    );
+  }
 
   return (
     <section

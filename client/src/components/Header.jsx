@@ -7,6 +7,7 @@ const NAV_LINKS = [
   { id: "services", label: "Services" },
   { id: "pricing", label: "Pricing" },
   { id: "results", label: "Results" },
+  { id: "gallery", label: "Gallery", isPage: true },
   { id: "coaches", label: "Coaches" },
   { id: "contact", label: "Contact" },
 ];
@@ -23,7 +24,7 @@ export default function Header() {
       setScrolled(window.scrollY > 30);
 
       if (location.pathname === "/") {
-        const sections = NAV_LINKS.map((l) => l.id);
+        const sections = NAV_LINKS.filter(l => !l.isPage).map((l) => l.id);
         for (let i = sections.length - 1; i >= 0; i--) {
           const el = document.getElementById(sections[i]);
           if (el) {
@@ -34,6 +35,9 @@ export default function Header() {
             }
           }
         }
+      } else {
+        // If not on home, set active to the page name (e.g. gallery)
+        setActive(location.pathname.substring(1));
       }
     };
 
@@ -92,7 +96,7 @@ export default function Header() {
           {NAV_LINKS.map((link) => (
             <button
               key={link.id}
-              onClick={() => scrollToSection(link.id)}
+              onClick={() => link.isPage ? navigate(`/${link.id}`) : scrollToSection(link.id)}
               className={`relative px-4 py-2 text-sm font-medium rounded-lg transition-all duration-300 ${
                 active === link.id
                   ? "text-[#C9A34E]"
@@ -134,7 +138,10 @@ export default function Header() {
           {NAV_LINKS.map((link) => (
             <button
               key={link.id}
-              onClick={() => scrollToSection(link.id)}
+              onClick={() => {
+                setOpen(false);
+                link.isPage ? navigate(`/${link.id}`) : scrollToSection(link.id);
+              }}
               className={`block w-full text-left px-4 py-3 rounded-xl text-sm font-medium transition-all duration-300 ${
                 active === link.id
                   ? "text-[#C9A34E] bg-[#C9A34E]/10"

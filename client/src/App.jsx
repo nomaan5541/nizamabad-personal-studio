@@ -12,6 +12,7 @@ import Home from "./pages/Home";
 import Login from "./pages/Login";
 import AdminDashboard from "./pages/AdminDashboard";
 import BookingPage from "./pages/BookingPage";
+import GalleryPage from "./pages/GalleryPage";
 
 import Header from "./components/Header";
 import WhatsAppButton from "./components/WhatsAppButton";
@@ -36,6 +37,7 @@ function AppRoutes() {
   return (
     <Routes>
       <Route path="/" element={<Home />} />
+      <Route path="/gallery" element={<GalleryPage />} />
       <Route path="/booking" element={<BookingPage />} />
       <Route path="/admin" element={<Login />} />
       <Route
